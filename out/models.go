@@ -1,16 +1,20 @@
 package out
 
-import "github.com/adamstegman/tracker-git-branch-resource"
+import (
+	"time"
+
+	"github.com/adamstegman/tracker-git-branch-resource"
+)
 
 type OutRequest struct {
 	Source resource.Source `json:"source"`
-	Params Params          `json:"params"`
+	Params struct{}        `json:"params"`
 }
 
-type Params struct {
-	Repos []string `json:"repos"`
+type Version struct {
+	Time time.Time `json:time`
 }
 
 type OutResponse struct {
-	Version resource.Version `json:"version"`
+	Version Version `json:"version"`
 }

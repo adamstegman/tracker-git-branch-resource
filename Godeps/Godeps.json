@@ -1,14 +1,10 @@
 {
 	"ImportPath": "github.com/adamstegman/tracker-git-branch-resource",
-	"GoVersion": "go1.3",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
-		{
-			"ImportPath": "github.com/mitchellh/colorstring",
-			"Rev": "9797cb57e314a5a2c4d735ff060d5c6dcba57749"
-		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.0.0-23-g939c01c",
@@ -17,10 +13,6 @@
 		{
 			"ImportPath": "github.com/onsi/gomega",
 			"Rev": "efd113280743f90026f1dc18b93ca5355d8df0bf"
-		},
-		{
-			"ImportPath": "github.com/xoebus/go-tracker",
-			"Rev": "7e343d2422b9902d3a40498c9c390380482826b7"
 		}
 	]
 }
