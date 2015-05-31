@@ -6,6 +6,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/adamstegman/go-tracker",
+			"Rev": "5edf550d280678d800abd2f23dcc050af0963596"
+		},
+		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.0.0-23-g939c01c",
 			"Rev": "939c01cdcec896f69e7e0e5787934e32972419be"

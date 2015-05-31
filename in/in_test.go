@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -56,36 +55,17 @@ var _ = Describe("In", func() {
 		Ω(err).ShouldNot(HaveOccurred())
 	})
 
-	Context("when a version is given to the executable", func() {
-		BeforeEach(func() {
-			request = in.InRequest{
-				Source: resource.Source{
-					Token:     "abc",
-					ProjectID: "1234",
-				},
-				Version: resource.Version{
-					Time: time.Now().Add(332 * time.Hour),
-				},
-			}
-		})
-
-		It("outputs that version", func() {
-			Ω(response.Version.Time).Should(BeTemporally("~", request.Version.Time, time.Second))
-		})
+	BeforeEach(func() {
+		request = in.InRequest{
+			Source: resource.Source{
+				Token:     "abc",
+				ProjectID: "1234",
+			},
+			Version: resource.Version{StoryID: 1234},
+		}
 	})
 
-	Context("when a version is not given to the executable", func() {
-		BeforeEach(func() {
-			request = in.InRequest{
-				Source: resource.Source{
-					Token:     "abc",
-					ProjectID: "1234",
-				},
-			}
-		})
-
-		It("generates a 'fake' current version", func() {
-			Ω(response.Version.Time).Should(BeTemporally("~", time.Now(), time.Second))
-		})
+	It("outputs that version", func() {
+		Ω(response.Version.StoryID).Should(Equal(request.Version.StoryID))
 	})
 })

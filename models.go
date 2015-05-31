@@ -1,15 +1,15 @@
 package resource
 
-import "time"
-
 type Source struct {
-	Token      string `json:"token"`
-	ProjectID  string `json:"project_id"`
-	TrackerURL string `json:"tracker_url"`
+	Token      string   `json:"token"`
+	ProjectID  string   `json:"project_id"`
+	TrackerURL string   `json:"tracker_url"`
+	Repos      []string `json:"repos"`
+	PrivateKey string   `json:"private_key"`
 }
 
 type Version struct {
-	Time time.Time `json:"time"`
+	StoryID int `json:"story_id"`
 }
 
 type MetadataPair struct {

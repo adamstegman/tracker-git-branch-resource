@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/adamstegman/tracker-git-branch-resource"
 	"github.com/adamstegman/tracker-git-branch-resource/in"
@@ -16,14 +15,9 @@ func main() {
 		fatal("reading request from stdin", err)
 	}
 
-	timestamp := request.Version.Time
-	if timestamp.IsZero() {
-		timestamp = time.Now()
-	}
-
 	response := in.InResponse{
 		Version: resource.Version{
-			Time: timestamp,
+			StoryID: request.Version.StoryID,
 		},
 	}
 
