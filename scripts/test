@@ -8,7 +8,7 @@ ROOT=$PWD
 export GOPATH=$PWD/gopath
 export PATH=$GOPATH/bin:$PATH
 
-cd $GOPATH/src/github.com/concourse/tracker-resource
+cd $GOPATH/src/github.com/adamstegman/tracker-git-branch-resource
 
 export GOPATH=${PWD}/Godeps/_workspace:$GOPATH
 export PATH=${PWD}/Godeps/_workspace/bin:$PATH
@@ -20,4 +20,4 @@ ginkgo -r -p "$@"
 ./scripts/build
 
 cd ..
-mv tracker-resource $ROOT/build-root
+mv tracker-git-branch-resource $ROOT/build-root

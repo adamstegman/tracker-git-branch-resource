@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/concourse/tracker-resource",
+	"ImportPath": "github.com/adamstegman/tracker-git-branch-resource",
 	"GoVersion": "go1.3",
 	"Packages": [
 		"./..."

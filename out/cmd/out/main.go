@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/concourse/tracker-resource"
-	"github.com/concourse/tracker-resource/out"
+	"github.com/adamstegman/tracker-git-branch-resource"
+	"github.com/adamstegman/tracker-git-branch-resource/out"
 
 	"github.com/mitchellh/colorstring"
 	"github.com/xoebus/go-tracker"

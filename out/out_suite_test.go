@@ -15,7 +15,7 @@ var outPath string
 var _ = BeforeSuite(func() {
 	var err error
 
-	outPath, err = gexec.Build("github.com/concourse/tracker-resource/out/cmd/out")
+	outPath, err = gexec.Build("github.com/adamstegman/tracker-git-branch-resource/out/cmd/out")
 	Ω(err).ShouldNot(HaveOccurred())
 })
 
