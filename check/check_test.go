@@ -64,8 +64,6 @@ var _ = Describe("check", func() {
 
 	Context("when no known story is given", func() {
 		BeforeEach(func() {
-			// FIXME: is this accurate, or is it null? or missing entirely?
-			// use omitempty
 			request.Version = resource.Version{}
 
 			stories := []tracker.Story{{ID: 9999}, {ID: 1234}}

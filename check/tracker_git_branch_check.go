@@ -74,7 +74,6 @@ func (c trackerGitBranchCheck) findStoriesFinishedAfterStory(storyID int, finish
 		return []tracker.Story{}, err
 	}
 	for _, activity := range activities {
-		// FIXME: ensure these are reverse chronological
 		if activity.Highlight == "finished" {
 			givenStoryDeliveredTime = activity.OccurredAt
 			break
