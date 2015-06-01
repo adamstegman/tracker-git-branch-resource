@@ -32,7 +32,7 @@ func main() {
 	projectClient := tracker.NewClient(trackerToken).InProject(trackerProjectID)
 
 	trackerCheck := check.NewTrackerGitBranchCheck(projectClient)
-	stories, err := trackerCheck.StoriesFinishedAfterStory(0)
+	stories, err := trackerCheck.StoriesFinishedAfterStory(request.Version.StoryID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not fetch stories: %s", err)
 		os.Exit(1)

@@ -30,16 +30,19 @@ func (c trackerGitBranchCheck) StoriesFinishedAfterStory(storyID int) ([]tracker
 		return []tracker.Story{}, err
 	}
 
-	// TODO:
-	// * get activity for given story to find beginning time
-	// * get activity for each story
-	//     * NOTE: use occurred_after parameter in activity request
-	// * select stories finished after the given story was finished
-	latestFinishedStory, err := c.findLatestFinishedStory(finishedStories)
-	if err != nil {
-		return []tracker.Story{}, err
+	if storyID == 0 {
+		latestFinishedStory, err := c.findLatestFinishedStory(finishedStories)
+		if err != nil {
+			return []tracker.Story{}, err
+		}
+		return []tracker.Story{latestFinishedStory}, nil
+	} else {
+		storiesFinishedAfterGivenStory, err := c.findStoriesFinishedAfterStory(storyID, finishedStories)
+		if err != nil {
+			return []tracker.Story{}, err
+		}
+		return storiesFinishedAfterGivenStory, nil
 	}
-	return []tracker.Story{latestFinishedStory}, nil
 }
 
 func (c trackerGitBranchCheck) findLatestFinishedStory(stories []tracker.Story) (tracker.Story, error) {
@@ -61,4 +64,37 @@ func (c trackerGitBranchCheck) findLatestFinishedStory(stories []tracker.Story) 
 		}
 	}
 	return latestFinishedStory, nil
+}
+
+func (c trackerGitBranchCheck) findStoriesFinishedAfterStory(storyID int, finishedStories []tracker.Story) ([]tracker.Story, error) {
+	// get activity for given story to find beginning time
+	var givenStoryDeliveredTime int64
+	activities, err := c.projectClient.StoryActivity(storyID, tracker.ActivityQuery{})
+	if err != nil {
+		return []tracker.Story{}, err
+	}
+	for _, activity := range activities {
+		// FIXME: ensure these are reverse chronological
+		if activity.Highlight == "finished" {
+			givenStoryDeliveredTime = activity.OccurredAt
+			break
+		}
+	}
+
+	// select stories finished after the given story was finished
+	afterGivenStoryQuery := tracker.ActivityQuery{OccurredAfter: givenStoryDeliveredTime}
+	var storiesFinishedAfterGivenStory []tracker.Story
+	for _, story := range finishedStories {
+		activities, err := c.projectClient.StoryActivity(story.ID, afterGivenStoryQuery)
+		if err != nil {
+			return []tracker.Story{}, err
+		}
+		for _, activity := range activities {
+			if activity.Highlight == "finished" {
+				storiesFinishedAfterGivenStory = append(storiesFinishedAfterGivenStory, story)
+				break
+			}
+		}
+	}
+	return storiesFinishedAfterGivenStory, nil
 }

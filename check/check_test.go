@@ -26,41 +26,6 @@ var _ = Describe("check", func() {
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		stories := []tracker.Story{{ID: 9999}, {ID: 1234}}
-		storiesJson, err := json.Marshal(stories)
-		Expect(err).NotTo(HaveOccurred())
-		server.AppendHandlers(
-			ghttp.CombineHandlers(
-				ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories", "date_format=millis&with_state=finished"),
-				ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
-				ghttp.RespondWith(http.StatusOK, storiesJson),
-			),
-		)
-		activities9999 := []tracker.Activity{
-			{Highlight: "finished", OccurredAt: 1999999999999},
-		}
-		activities9999Json, err := json.Marshal(activities9999)
-		Expect(err).NotTo(HaveOccurred())
-		server.AppendHandlers(
-			ghttp.CombineHandlers(
-				ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/9999/activity", "date_format=millis"),
-				ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
-				ghttp.RespondWith(http.StatusOK, activities9999Json),
-			),
-		)
-		activities1234 := []tracker.Activity{
-			{Highlight: "finished", OccurredAt: 1000000000000},
-		}
-		activities1234Json, err := json.Marshal(activities1234)
-		Expect(err).NotTo(HaveOccurred())
-		server.AppendHandlers(
-			ghttp.CombineHandlers(
-				ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/1234/activity", "date_format=millis"),
-				ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
-				ghttp.RespondWith(http.StatusOK, activities1234Json),
-			),
-		)
-
 		request = &check.Request{
 			Source: resource.Source{
 				Token:      "trackerToken",
@@ -102,16 +67,97 @@ var _ = Describe("check", func() {
 			// FIXME: is this accurate, or is it null? or missing entirely?
 			// use omitempty
 			request.Version = resource.Version{}
+
+			stories := []tracker.Story{{ID: 9999}, {ID: 1234}}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories", "date_format=millis&with_state=finished"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, stories),
+				),
+			)
+			activities9999 := []tracker.Activity{
+				{Highlight: "finished", OccurredAt: 1999999999999},
+			}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/9999/activity", "date_format=millis"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, activities9999),
+				),
+			)
+			activities1234 := []tracker.Activity{
+				{Highlight: "finished", OccurredAt: 1000000000000},
+			}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/1234/activity", "date_format=millis"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, activities1234),
+				),
+			)
 		})
 
 		It("returns the last finished story", func() {
-			Expect(len(response)).To(Equal(1))
-			Expect(response[0]).To(Equal(resource.Version{StoryID: 9999}))
+			Expect(response).To(Equal([]resource.Version{{StoryID: 9999}}))
 		})
 	})
 
 	Context("when a story ID is given", func() {
-		XIt("returns all stories finished after the given story", func() {
+		BeforeEach(func() {
+			request.Version = resource.Version{StoryID: 1234}
+			stories := []tracker.Story{{ID: 9999}, {ID: 5454}, {ID: 1234}}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories", "date_format=millis&with_state=finished"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, stories),
+				),
+			)
+			activities1234 := []tracker.Activity{
+				{Highlight: "finished", OccurredAt: 1000000000000},
+			}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/1234/activity", "date_format=millis"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, activities1234),
+				),
+			)
+			activities9999 := []tracker.Activity{
+				{Highlight: "finished", OccurredAt: 1999999999999},
+			}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/9999/activity", "date_format=millis&occurred_after=1000000000000"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, activities9999),
+				),
+			)
+			activities5454 := []tracker.Activity{
+				{Highlight: "finished", OccurredAt: 1545454545454},
+			}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/5454/activity", "date_format=millis&occurred_after=1000000000000"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, activities5454),
+				),
+			)
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/projects/123456/stories/1234/activity", "date_format=millis&occurred_after=1000000000000"),
+					ghttp.VerifyHeaderKV("X-Trackertoken", "trackerToken"),
+					ghttp.RespondWithJSONEncoded(http.StatusOK, []tracker.Activity{}),
+				),
+			)
+		})
+
+		It("returns all stories finished after the given story", func() {
+			Expect(response).To(Equal([]resource.Version{
+				{StoryID: 9999},
+				{StoryID: 5454},
+			}))
 		})
 	})
 })

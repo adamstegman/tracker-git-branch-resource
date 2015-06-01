@@ -5,14 +5,14 @@ import (
 )
 
 type FakeTrackerProjectClient struct {
-	StoriesByQuery      map[tracker.StoriesQuery][]tracker.Story
-	ActivitiesByStoryID map[int][]tracker.Activity
+	StoriesByQuery           map[tracker.StoriesQuery][]tracker.Story
+	ActivityQueriesByStoryID map[int]map[tracker.ActivityQuery][]tracker.Activity
 }
 
 func NewFakeTrackerProjectClient() *FakeTrackerProjectClient {
 	return &FakeTrackerProjectClient{
-		StoriesByQuery:      make(map[tracker.StoriesQuery][]tracker.Story),
-		ActivitiesByStoryID: make(map[int][]tracker.Activity),
+		StoriesByQuery:           make(map[tracker.StoriesQuery][]tracker.Story),
+		ActivityQueriesByStoryID: make(map[int]map[tracker.ActivityQuery][]tracker.Activity),
 	}
 }
 
@@ -20,8 +20,11 @@ func (c *FakeTrackerProjectClient) AddStoriesForQuery(stories []tracker.Story, q
 	c.StoriesByQuery[query] = stories
 }
 
-func (c *FakeTrackerProjectClient) AddActivityForStoryID(activities []tracker.Activity, storyID int) {
-	c.ActivitiesByStoryID[storyID] = activities
+func (c *FakeTrackerProjectClient) AddActivityForStoryIDAndQuery(activities []tracker.Activity, storyID int, query tracker.ActivityQuery) {
+	if c.ActivityQueriesByStoryID[storyID] == nil {
+		c.ActivityQueriesByStoryID[storyID] = make(map[tracker.ActivityQuery][]tracker.Activity)
+	}
+	c.ActivityQueriesByStoryID[storyID][query] = activities
 }
 
 func (c *FakeTrackerProjectClient) Stories(query tracker.StoriesQuery) ([]tracker.Story, error) {
@@ -29,5 +32,5 @@ func (c *FakeTrackerProjectClient) Stories(query tracker.StoriesQuery) ([]tracke
 }
 
 func (c *FakeTrackerProjectClient) StoryActivity(storyID int, query tracker.ActivityQuery) ([]tracker.Activity, error) {
-	return c.ActivitiesByStoryID[storyID], nil
+	return c.ActivityQueriesByStoryID[storyID][query], nil
 }
