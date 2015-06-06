@@ -35,6 +35,9 @@ func (c trackerGitBranchCheck) StoriesFinishedAfterStory(storyID int) ([]tracker
 		if err != nil {
 			return []tracker.Story{}, err
 		}
+		if latestFinishedStory.ID == 0 {
+			return []tracker.Story{}, nil
+		}
 		return []tracker.Story{latestFinishedStory}, nil
 	} else {
 		storiesFinishedAfterGivenStory, err := c.findStoriesFinishedAfterStory(storyID, finishedStories)
