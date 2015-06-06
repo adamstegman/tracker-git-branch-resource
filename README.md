@@ -28,7 +28,8 @@ The git branches are identified by the presence of a story ID in the branch name
 #### Source Configuration
 
 * `token`: *Required.* Your API token, which can be found on your profile page.
-* `project_id`: *Required.* Your project ID, which can be found in the URL of your project. Make sure that your `project_id` is a string because it will converted to JSON when given to the resource and JSON doesn't like integers.
+* `project_id`: *Required.* Your project ID, which can be found in the URL of your project.
+  Make sure that your `project_id` is a string because it will converted to JSON when given to the resource and JSON doesn't like integers.
 * `tracker_url`: *Optional.*
 * `repos`: *Required.* The location of the repositories which will contain the branches corresponding to Tracker stories.
 * `private_key`: *Optional.* Private key to use when pulling/pushing.
