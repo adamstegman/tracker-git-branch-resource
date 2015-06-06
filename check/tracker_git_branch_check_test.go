@@ -45,6 +45,21 @@ var _ = Describe("trackerGitBranchCheck", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stories).To(Equal([]tracker.Story{{ID: 9999}}))
 		})
+
+		Context("and no finished stories are found", func() {
+			BeforeEach(func() {
+				fakeTrackerProjectClient = checktest.NewFakeTrackerProjectClient()
+				fakeTrackerProjectClient.AddStoriesForQuery([]tracker.Story{}, tracker.StoriesQuery{State: tracker.StoryStateFinished})
+
+				trackerCheck = check.NewTrackerGitBranchCheck(fakeTrackerProjectClient)
+			})
+
+			It("returns no stories", func() {
+				stories, err := trackerCheck.StoriesFinishedAfterStory(0)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(stories).To(Equal([]tracker.Story{}))
+			})
+		})
 	})
 
 	Context("when a story ID is given", func() {
