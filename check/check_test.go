@@ -11,8 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/onsi/gomega/ghttp"
-
-	"github.com/adamstegman/go-tracker"
+	"github.com/xoebus/go-tracker"
 
 	"github.com/adamstegman/tracker-git-branch-resource"
 	"github.com/adamstegman/tracker-git-branch-resource/check"

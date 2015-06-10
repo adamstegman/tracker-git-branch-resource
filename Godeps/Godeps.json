@@ -6,10 +6,6 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/adamstegman/go-tracker",
-			"Rev": "5edf550d280678d800abd2f23dcc050af0963596"
-		},
-		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.0.0-23-g939c01c",
 			"Rev": "939c01cdcec896f69e7e0e5787934e32972419be"
@@ -17,6 +13,10 @@
 		{
 			"ImportPath": "github.com/onsi/gomega",
 			"Rev": "efd113280743f90026f1dc18b93ca5355d8df0bf"
+		},
+		{
+			"ImportPath": "github.com/xoebus/go-tracker",
+			"Rev": "47ff611dc3937d84895fae4a262634a245ccbcda"
 		}
 	]
 }
