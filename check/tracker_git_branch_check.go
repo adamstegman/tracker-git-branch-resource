@@ -77,7 +77,7 @@ func (c trackerGitBranchCheck) latestStoryBranchRef(remoteBranches []string) ([]
 					if err != nil {
 						return []resource.Version{}, err
 					}
-					versions = []resource.Version{{StoryID: story.ID, Ref: ref}}
+					versions = []resource.Version{{StoryID: story.ID, Ref: ref, Timestamp: timestamp}}
 					latestTime = timestamp
 				}
 
@@ -89,25 +89,16 @@ func (c trackerGitBranchCheck) latestStoryBranchRef(remoteBranches []string) ([]
 }
 
 func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranches []string) ([]resource.Version, error) {
-	startingTimestamp, err := c.refCommitTimestamp(c.startingVersion.Ref)
-	_, cmdFailed := err.(*exec.ExitError)
-	if cmdFailed {
-		// Find all commits if the previously checked version was deleted
-		startingTimestamp = 1
-	} else if err != nil {
-		return []resource.Version{}, err
-	}
-
-	versionCommitTimestamps := make(map[resource.Version]int64)
+	versions := []resource.Version{}
 	for _, story := range c.stories {
 		for _, branch := range remoteBranches {
 			if isStoryBranch(branch, story) {
-				refs, err := c.refsSinceTimestamp(branch, startingTimestamp)
+				refs, err := c.refsSinceTimestamp(branch, c.startingVersion.Timestamp)
 				if err != nil {
 					return []resource.Version{}, err
 				}
 
-				// Collect timestamps for refs for later sorting
+				// Collect versions for later sorting
 				for _, ref := range refs {
 					ref = strings.Trim(ref, "\"")
 					if ref != "" && ref != c.startingVersion.Ref {
@@ -115,8 +106,7 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 						if err != nil {
 							return []resource.Version{}, err
 						}
-						version := resource.Version{StoryID: story.ID, Ref: ref}
-						versionCommitTimestamps[version] = timestamp
+						versions = append(versions, resource.Version{StoryID: story.ID, Ref: ref, Timestamp: timestamp})
 					}
 				}
 
@@ -124,7 +114,7 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 			}
 		}
 	}
-	return sortVersionsByTimestamp(versionCommitTimestamps), nil
+	return sortVersionsByTimestamp(versions), nil
 }
 
 func (c trackerGitBranchCheck) fetchBranches() error {
@@ -196,25 +186,25 @@ func (c trackerGitBranchCheck) refsSinceTimestamp(branch string, timestamp int64
 	return strings.Split(refsBytes.String(), "\n"), nil
 }
 
-func sortVersionsByTimestamp(versionCommitTimestamps map[resource.Version]int64) []resource.Version {
+func sortVersionsByTimestamp(versions []resource.Version) []resource.Version {
 	// Sort refs by timestamp from oldest to newest
-	versions := []resource.Version{}
-	for version, timestamp := range versionCommitTimestamps {
+	sortedVersions := []resource.Version{}
+	for _, version := range versions {
 		var postIndex int
-		for _, v := range versions {
-			if versionCommitTimestamps[v] < timestamp {
+		for _, v := range sortedVersions {
+			if v.Timestamp < version.Timestamp {
 				postIndex = postIndex + 1
 			} else {
 				break
 			}
 		}
 		if postIndex == 0 {
-			versions = append([]resource.Version{version}, versions...)
-		} else if postIndex == len(versions) {
-			versions = append(versions, version)
+			sortedVersions = append([]resource.Version{version}, sortedVersions...)
+		} else if postIndex == len(sortedVersions) {
+			sortedVersions = append(sortedVersions, version)
 		} else {
-			versions = append(versions[0:postIndex], append([]resource.Version{version}, versions[postIndex:]...)...)
+			sortedVersions = append(sortedVersions[0:postIndex], append([]resource.Version{version}, sortedVersions[postIndex:]...)...)
 		}
 	}
-	return versions
+	return sortedVersions
 }
