@@ -15,13 +15,12 @@ The git branches are identified by the presence of a story ID in the branch name
 
 ``` yaml
 - name: tracker
-  type: tracker-git
+  type: tracker-git-branch
   source:
     token: TRACKER_API_TOKEN
     project_id: "TRACKER_PROJECT_ID"
     tracker_url: https://www.pivotaltracker.com
-    repos:
-      - git@github.com:you/your_repo
+    repo: git@github.com:you/your_repo
     private_key: GITHUB_PRIVATE_KEY
 ```
 
@@ -31,7 +30,7 @@ The git branches are identified by the presence of a story ID in the branch name
 * `project_id`: *Required.* Your project ID, which can be found in the URL of your project.
   Make sure that your `project_id` is a string because it will converted to JSON when given to the resource and JSON doesn't like integers.
 * `tracker_url`: *Optional.*
-* `repos`: *Required.* The location of the repositories which will contain the branches corresponding to Tracker stories.
+* `repo`: *Required.* The location of the repository which will contain the branches corresponding to Tracker stories.
 * `private_key`: *Optional.* Private key to use when pulling/pushing.
     Example:
     ```
@@ -44,3 +43,10 @@ The git branches are identified by the presence of a story ID in the branch name
     ```
 
 You'll need a seperate resource for each Tracker project.
+
+## Development
+
+Run `scripts/test` to execute the tests using [Ginkgo][].
+The branches in this project are fixtures for the tests, so your working directory must not contain any uncommitted changes before running this script.
+
+[ginkgo]: http://onsi.github.io/ginkgo/

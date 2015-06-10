@@ -1,15 +1,16 @@
 package resource
 
 type Source struct {
-	Token      string   `json:"token"`
-	ProjectID  string   `json:"project_id"`
-	TrackerURL string   `json:"tracker_url"`
-	Repos      []string `json:"repos"`
-	PrivateKey string   `json:"private_key"`
+	Token      string `json:"token"`
+	ProjectID  string `json:"project_id"`
+	TrackerURL string `json:"tracker_url"`
+	Repo       string `json:"repo"`
+	PrivateKey string `json:"private_key"`
 }
 
 type Version struct {
-	StoryID int `json:"story_id"`
+	StoryID int    `json:"story_id"`
+	Ref     string `json:"ref"`
 }
 
 type MetadataPair struct {

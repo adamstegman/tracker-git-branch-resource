@@ -10,6 +10,19 @@ export PATH=$GOPATH/bin:$PATH
 
 cd $GOPATH/src/github.com/adamstegman/tracker-git-branch-resource
 
+git status | grep nothing\\\(\ added\\\)\\\?\ to\ commit >/dev/null
+if [ $? -ne 0 ]; then
+  echo "Commit changes before running test script to allow checking out fixture branches"
+  exit 1
+fi
+
+ref="$(git rev-parse HEAD)"
+git fetch origin
+for branch in $(git branch -r | grep fixture); do
+  git checkout "$(echo "$branch" | sed 's:origin/::')"
+done
+git checkout "$ref"
+
 export GOPATH=${PWD}/Godeps/_workspace:$GOPATH
 export PATH=${PWD}/Godeps/_workspace/bin:$PATH
 

@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"strconv"
 
-	"github.com/adamstegman/go-tracker"
+	"github.com/xoebus/go-tracker"
 
-	"github.com/adamstegman/tracker-git-branch-resource"
 	"github.com/adamstegman/tracker-git-branch-resource/check"
 )
 
@@ -17,6 +18,19 @@ func main() {
 	err := json.NewDecoder(os.Stdin).Decode(&request)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not parse input: %s", err)
+		os.Exit(1)
+	}
+
+	repository, err := ioutil.TempDir("", "tracker-git-branch")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not create temporary directory: %s", err)
+		os.Exit(1)
+	}
+	defer os.RemoveAll(repository)
+	cloneCmd := exec.Command("git", "clone", request.Source.Repo, repository)
+	err = cloneCmd.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not clone repo %s: %s", request.Source.Repo, err)
 		os.Exit(1)
 	}
 
@@ -31,18 +45,28 @@ func main() {
 	}
 	projectClient := tracker.NewClient(trackerToken).InProject(trackerProjectID)
 
-	trackerCheck := check.NewTrackerGitBranchCheck(projectClient)
-	stories, err := trackerCheck.StoriesFinishedAfterStory(request.Version.StoryID)
+	finishedQuery := tracker.StoriesQuery{State: tracker.StoryStateFinished}
+	finishedStories, err := projectClient.Stories(finishedQuery)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not fetch stories: %s", err)
+		fmt.Fprintf(os.Stderr, "Could not fetch finished stories: %s", err)
+		os.Exit(1)
+	}
+	deliveredQuery := tracker.StoriesQuery{State: tracker.StoryStateDelivered}
+	deliveredStories, err := projectClient.Stories(deliveredQuery)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not fetch delivered stories: %s", err)
+		os.Exit(1)
+	}
+	stories := append(finishedStories, deliveredStories...)
+
+	trackerGitBranchCheck := check.NewTrackerGitBranchCheck(request.Version, repository, stories)
+	versions, err := trackerGitBranchCheck.NewVersions()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not find versions: %s", err)
 		os.Exit(1)
 	}
 
-	response := []resource.Version{}
-	for _, story := range stories {
-		response = append(response, resource.Version{StoryID: story.ID})
-	}
-	err = json.NewEncoder(os.Stdout).Encode(response)
+	err = json.NewEncoder(os.Stdout).Encode(versions)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not print response: %s", err)
 		os.Exit(1)
