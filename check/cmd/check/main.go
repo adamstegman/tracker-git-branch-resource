@@ -3,13 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"os/exec"
 	"strconv"
 
 	"github.com/xoebus/go-tracker"
 
+	"github.com/adamstegman/tracker-git-branch-resource"
 	"github.com/adamstegman/tracker-git-branch-resource/check"
 )
 
@@ -21,14 +20,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	repository, err := ioutil.TempDir("", "tracker-git-branch")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not create temporary directory: %s", err)
-		os.Exit(1)
-	}
-	defer os.RemoveAll(repository)
-	cloneCmd := exec.Command("git", "clone", request.Source.Repo, repository)
-	err = cloneCmd.Run()
+	repository := resource.NewRepository(request.Source.Repo)
+	err = repository.Clone()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not clone repo %s: %s", request.Source.Repo, err)
 		os.Exit(1)

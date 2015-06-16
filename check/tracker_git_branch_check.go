@@ -1,9 +1,6 @@
 package check
 
 import (
-	"bytes"
-	"fmt"
-	"os/exec"
 	"strconv"
 	"strings"
 
@@ -18,13 +15,13 @@ type TrackerGitBranchCheck interface {
 
 type trackerGitBranchCheck struct {
 	startingVersion resource.Version
-	repository      string
+	repository      resource.Repository
 	stories         []tracker.Story
 }
 
 func NewTrackerGitBranchCheck(
 	startingVersion resource.Version,
-	repository string,
+	repository resource.Repository,
 	stories []tracker.Story,
 ) trackerGitBranchCheck {
 	return trackerGitBranchCheck{
@@ -37,11 +34,11 @@ func NewTrackerGitBranchCheck(
 func (c trackerGitBranchCheck) NewVersions() ([]resource.Version, error) {
 	versions := []resource.Version{}
 
-	err := c.fetchBranches()
+	err := c.repository.FetchBranches()
 	if err != nil {
 		return []resource.Version{}, err
 	}
-	remoteBranches, err := c.remoteBranches()
+	remoteBranches, err := c.repository.RemoteBranches()
 	if err != nil {
 		return []resource.Version{}, err
 	}
@@ -67,13 +64,13 @@ func (c trackerGitBranchCheck) latestStoryBranchRef(remoteBranches []string) ([]
 	for _, story := range c.stories {
 		for _, branch := range remoteBranches {
 			if isStoryBranch(branch, story) {
-				timestamp, err := c.refCommitTimestamp(branch)
+				timestamp, err := c.repository.RefCommitTimestamp(branch)
 				if err != nil {
 					return []resource.Version{}, err
 				}
 
 				if timestamp > latestTime {
-					ref, err := c.latestRef(branch)
+					ref, err := c.repository.LatestRef(branch)
 					if err != nil {
 						return []resource.Version{}, err
 					}
@@ -93,7 +90,7 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 	for _, story := range c.stories {
 		for _, branch := range remoteBranches {
 			if isStoryBranch(branch, story) {
-				refs, err := c.refsSinceTimestamp(branch, c.startingVersion.Timestamp)
+				refs, err := c.repository.RefsSinceTimestamp(branch, c.startingVersion.Timestamp)
 				if err != nil {
 					return []resource.Version{}, err
 				}
@@ -102,7 +99,7 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 				for _, ref := range refs {
 					ref = strings.Trim(ref, "\"")
 					if ref != "" && ref != c.startingVersion.Ref {
-						timestamp, err := c.refCommitTimestamp(ref)
+						timestamp, err := c.repository.RefCommitTimestamp(ref)
 						if err != nil {
 							return []resource.Version{}, err
 						}
@@ -117,73 +114,8 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 	return sortVersionsByTimestamp(versions), nil
 }
 
-func (c trackerGitBranchCheck) fetchBranches() error {
-	fetchCmd := exec.Command("git", "fetch", "origin")
-	fetchCmd.Dir = c.repository
-	return fetchCmd.Run()
-}
-
-func (c trackerGitBranchCheck) remoteBranches() ([]string, error) {
-	branchCmd := exec.Command("git", "branch", "-r")
-	branchCmd.Dir = c.repository
-	var branchBytes bytes.Buffer
-	branchCmd.Stdout = &branchBytes
-	err := branchCmd.Run()
-	if err != nil {
-		return []string{}, err
-	}
-	branches := strings.Split(branchBytes.String(), "\n")
-
-	trimmedBranches := []string{}
-	for _, branch := range branches {
-		trimmedBranches = append(trimmedBranches, strings.TrimSpace(branch))
-	}
-	return trimmedBranches, nil
-}
-
 func isStoryBranch(branch string, story tracker.Story) bool {
 	return strings.Contains(branch, strconv.Itoa(story.ID))
-}
-
-func (c trackerGitBranchCheck) refCommitTimestamp(ref string) (int64, error) {
-	timeCmd := exec.Command("git", "show", "-s", "--format=\"%ct\"", ref)
-	timeCmd.Dir = c.repository
-	var timeBytes bytes.Buffer
-	timeCmd.Stdout = &timeBytes
-	err := timeCmd.Run()
-	if err != nil {
-		return 0, err
-	}
-	timeString := strings.Trim(strings.TrimSpace(timeBytes.String()), "\"")
-	timestamp, err := strconv.ParseInt(timeString, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return timestamp, nil
-}
-
-func (c trackerGitBranchCheck) latestRef(branch string) (string, error) {
-	refCmd := exec.Command("git", "show", "-s", "--format=\"%H\"", branch)
-	refCmd.Dir = c.repository
-	var refBytes bytes.Buffer
-	refCmd.Stdout = &refBytes
-	err := refCmd.Run()
-	if err != nil {
-		return "", err
-	}
-	return strings.Trim(strings.TrimSpace(refBytes.String()), "\""), nil
-}
-
-func (c trackerGitBranchCheck) refsSinceTimestamp(branch string, timestamp int64) ([]string, error) {
-	refsCmd := exec.Command("git", "log", fmt.Sprintf("--since=%d", timestamp), "--format=\"%H\"", branch)
-	refsCmd.Dir = c.repository
-	var refsBytes bytes.Buffer
-	refsCmd.Stdout = &refsBytes
-	err := refsCmd.Run()
-	if err != nil {
-		return []string{}, err
-	}
-	return strings.Split(refsBytes.String(), "\n"), nil
 }
 
 func sortVersionsByTimestamp(versions []resource.Version) []resource.Version {
