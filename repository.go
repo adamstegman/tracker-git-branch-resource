@@ -54,7 +54,9 @@ func (r Repository) RemoteBranches() ([]string, error) {
 
 	trimmedBranches := []string{}
 	for _, branch := range branches {
-		trimmedBranches = append(trimmedBranches, strings.TrimSpace(branch))
+		if !strings.Contains(branch, "origin/HEAD ->") {
+			trimmedBranches = append(trimmedBranches, strings.TrimSpace(branch))
+		}
 	}
 	return trimmedBranches, nil
 }
