@@ -20,7 +20,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	repository := resource.NewRepository(request.Source.Repo)
+	repository := resource.NewRepository(request.Source.Repo, "")
 	err = repository.Clone()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not clone repo %s: %s", request.Source.Repo, err)

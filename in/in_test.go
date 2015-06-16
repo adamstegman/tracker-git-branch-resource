@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -31,7 +32,7 @@ var _ = Describe("In", func() {
 
 		stdin := &bytes.Buffer{}
 		err = json.NewEncoder(stdin).Encode(request)
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		cmd := exec.Command(binPath, tmpDir)
 		cmd.Stdin = stdin
@@ -42,30 +43,38 @@ var _ = Describe("In", func() {
 			GinkgoWriter,
 			GinkgoWriter,
 		)
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
 
 		err = json.Unmarshal(session.Out.Contents(), &response)
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	AfterEach(func() {
 		err := os.RemoveAll(tmpDir)
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	BeforeEach(func() {
+		sourceRepo, err := filepath.Abs("..")
+		Expect(err).NotTo(HaveOccurred())
 		request = in.InRequest{
 			Source: resource.Source{
-				Token:     "abc",
-				ProjectID: "1234",
+				Token:     "trackerToken",
+				ProjectID: "123456",
+				Repo:      sourceRepo,
 			},
-			Version: resource.Version{StoryID: 1234},
+			Version: resource.Version{StoryID: 9999, Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: 1433829600},
 		}
 	})
 
-	It("outputs that version", func() {
-		Ω(response.Version.StoryID).Should(Equal(request.Version.StoryID))
+	It("clones the ref in the given directory and outputs that version", func() {
+		repository := resource.NewRepository("", tmpDir)
+		ref, err := repository.LatestRef("HEAD")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(ref).To(Equal(request.Version.Ref))
+
+		Expect(response.Version).To(Equal(request.Version))
 	})
 })

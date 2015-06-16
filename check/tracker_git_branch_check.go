@@ -34,7 +34,7 @@ func NewTrackerGitBranchCheck(
 func (c trackerGitBranchCheck) NewVersions() ([]resource.Version, error) {
 	versions := []resource.Version{}
 
-	err := c.repository.FetchBranches()
+	err := c.repository.Fetch()
 	if err != nil {
 		return []resource.Version{}, err
 	}

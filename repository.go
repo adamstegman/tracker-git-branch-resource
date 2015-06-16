@@ -14,24 +14,35 @@ type Repository struct {
 	source string
 }
 
-func NewRepository(source string) Repository {
-	return Repository{source: source}
+func NewRepository(source string, dir string) Repository {
+	return Repository{
+		Dir:    dir,
+		source: source,
+	}
 }
 
 func (r Repository) Clone() error {
-	var err error
-	r.Dir, err = ioutil.TempDir("", "tracker-git-branch-resource-repository")
-	if err != nil {
-		return err
+	if r.Dir == "" {
+		var err error
+		r.Dir, err = ioutil.TempDir("", "tracker-git-branch-resource-repository")
+		if err != nil {
+			return err
+		}
 	}
 	cloneCmd := exec.Command("git", "clone", r.source, r.Dir)
 	return cloneCmd.Run()
 }
 
-func (r Repository) FetchBranches() error {
+func (r Repository) Fetch() error {
 	fetchCmd := exec.Command("git", "fetch", "origin")
 	fetchCmd.Dir = r.Dir
 	return fetchCmd.Run()
+}
+
+func (r Repository) CheckoutRef(ref string) error {
+	checkoutCmd := exec.Command("git", "checkout", ref)
+	checkoutCmd.Dir = r.Dir
+	return checkoutCmd.Run()
 }
 
 func (r Repository) RemoteBranches() ([]string, error) {
