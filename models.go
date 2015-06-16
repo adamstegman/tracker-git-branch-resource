@@ -9,7 +9,7 @@ type Source struct {
 }
 
 type Version struct {
-	StoryID   int    `json:"story_id"`
+	StoryID   string `json:"story_id"`
 	Ref       string `json:"ref"`
 	Timestamp int64  `json:"timestamp"`
 }

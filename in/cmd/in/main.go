@@ -80,7 +80,7 @@ func metadata(request in.InRequest, repository resource.Repository) ([]resource.
 	if trackerURL == "" {
 		trackerURL = tracker.DefaultURL
 	}
-	storyURL := fmt.Sprintf("%s/story/show/%d", trackerURL, request.Version.StoryID)
+	storyURL := fmt.Sprintf("%s/story/show/%s", trackerURL, request.Version.StoryID)
 	return []resource.MetadataPair{
 		{Name: "commit", Value: request.Version.Ref},
 		{Name: "author", Value: authorName},
