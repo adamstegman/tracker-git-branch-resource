@@ -74,7 +74,7 @@ func (c trackerGitBranchCheck) latestStoryBranchRef(remoteBranches []string) ([]
 					if err != nil {
 						return []resource.Version{}, err
 					}
-					versions = []resource.Version{{StoryID: story.ID, Ref: ref, Branch: branch, Timestamp: timestamp}}
+					versions = []resource.Version{{StoryID: story.ID, Ref: ref, Timestamp: timestamp}}
 					latestTime = timestamp
 				}
 
@@ -103,7 +103,7 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 						if err != nil {
 							return []resource.Version{}, err
 						}
-						versions = append(versions, resource.Version{StoryID: story.ID, Ref: ref, Branch: branch, Timestamp: timestamp})
+						versions = append(versions, resource.Version{StoryID: story.ID, Ref: ref, Timestamp: timestamp})
 					}
 				}
 

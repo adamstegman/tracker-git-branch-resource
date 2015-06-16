@@ -10,7 +10,6 @@ type Source struct {
 
 type Version struct {
 	StoryID   int    `json:"story_id"`
-	Branch    string `json:"branch"`
 	Ref       string `json:"ref"`
 	Timestamp int64  `json:"timestamp"`
 }
