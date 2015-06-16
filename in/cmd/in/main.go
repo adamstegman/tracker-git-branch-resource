@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/xoebus/go-tracker"
+
 	"github.com/adamstegman/tracker-git-branch-resource"
 	"github.com/adamstegman/tracker-git-branch-resource/in"
 )
@@ -39,7 +41,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	metadata := []resource.MetadataPair{}
+	metadata, err := metadata(request, repository)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not fetch metadata for %s#%s: %s", request.Source.Repo, request.Version.Ref, err)
+		os.Exit(1)
+	}
 
 	response := in.InResponse{Version: request.Version, Metadata: metadata}
 
@@ -47,4 +53,41 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Could not print response: %s", err)
 		os.Exit(1)
 	}
+}
+
+func metadata(request in.InRequest, repository resource.Repository) ([]resource.MetadataPair, error) {
+	authorName, err := repository.RefAuthorName(request.Version.Ref)
+	if err != nil {
+		return []resource.MetadataPair{}, err
+	}
+	authorDate, err := repository.RefAuthorDate(request.Version.Ref)
+	if err != nil {
+		return []resource.MetadataPair{}, err
+	}
+	committerName, err := repository.RefCommitName(request.Version.Ref)
+	if err != nil {
+		return []resource.MetadataPair{}, err
+	}
+	committerDate, err := repository.RefCommitDate(request.Version.Ref)
+	if err != nil {
+		return []resource.MetadataPair{}, err
+	}
+	message, err := repository.RefMessage(request.Version.Ref)
+	if err != nil {
+		return []resource.MetadataPair{}, err
+	}
+	trackerURL := request.Source.TrackerURL
+	if trackerURL == "" {
+		trackerURL = tracker.DefaultURL
+	}
+	storyURL := fmt.Sprintf("%s/story/show/%d", trackerURL, request.Version.StoryID)
+	return []resource.MetadataPair{
+		{Name: "commit", Value: request.Version.Ref},
+		{Name: "author", Value: authorName},
+		{Name: "author_date", Value: authorDate},
+		{Name: "committer", Value: committerName},
+		{Name: "committer_date", Value: committerDate},
+		{Name: "message", Value: message},
+		{Name: "story_url", Value: storyURL},
+	}, nil
 }

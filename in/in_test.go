@@ -77,4 +77,16 @@ var _ = Describe("In", func() {
 
 		Expect(response.Version).To(Equal(request.Version))
 	})
+
+	It("outputs metadata about the story and ref", func() {
+		Expect(response.Metadata).To(Equal([]resource.MetadataPair{
+			{Name: "commit", Value: "42f809095d489e446713cf20fdc3d30e5faaa4c9"},
+			{Name: "author", Value: "Adam Stegman"},
+			{Name: "author_date", Value: "2015-06-08 23:00:00 -0700"},
+			{Name: "committer", Value: "Adam Stegman"},
+			{Name: "committer_date", Value: "2015-06-08 23:00:00 -0700"},
+			{Name: "message", Value: "Update\n"},
+			{Name: "story_url", Value: "https://www.pivotaltracker.com/story/show/9999"},
+		}))
+	})
 })

@@ -59,6 +59,38 @@ func (r Repository) RemoteBranches() ([]string, error) {
 	return trimmedBranches, nil
 }
 
+func (r Repository) RefAuthorName(ref string) (string, error) {
+	nameOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%an\"", ref)
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(nameOutput, "\""), nil
+}
+
+func (r Repository) RefAuthorDate(ref string) (string, error) {
+	timeOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%ai\"", ref)
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(timeOutput, "\""), nil
+}
+
+func (r Repository) RefCommitName(ref string) (string, error) {
+	nameOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%cn\"", ref)
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(nameOutput, "\""), nil
+}
+
+func (r Repository) RefCommitDate(ref string) (string, error) {
+	timeOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%ci\"", ref)
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(timeOutput, "\""), nil
+}
+
 func (r Repository) RefCommitTimestamp(ref string) (int64, error) {
 	timeOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%ct\"", ref)
 	if err != nil {
@@ -70,6 +102,14 @@ func (r Repository) RefCommitTimestamp(ref string) (int64, error) {
 		return 0, err
 	}
 	return timestamp, nil
+}
+
+func (r Repository) RefMessage(ref string) (string, error) {
+	msgOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%B\"", ref)
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(msgOutput, "\""), nil
 }
 
 func (r Repository) LatestRef(branch string) (string, error) {
