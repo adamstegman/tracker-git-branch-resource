@@ -144,7 +144,7 @@ func (r Repository) runCmd(name string, args ...string) error {
 	cmd.Stderr = &errBytes
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("%s %v failed: %s\n[STDERR]\n%s", name, args, err, errBytes.String())
+		return fmt.Errorf("%s %v in %s failed: %s\n[STDERR]\n%s", name, args, r.Dir, err, errBytes.String())
 	}
 	return nil
 }
@@ -158,7 +158,7 @@ func (r Repository) runCmdOutput(name string, args ...string) (string, error) {
 	cmd.Stderr = &errBytes
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("%s %v failed: %s\n[STDERR]\n%s", name, args, err, errBytes.String())
+		return "", fmt.Errorf("%s %v in %s failed: %s\n[STDERR]\n%s", name, args, r.Dir, err, errBytes.String())
 	}
 	return strings.TrimSpace(outputBytes.String()), nil
 }
