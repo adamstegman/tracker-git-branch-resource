@@ -59,7 +59,7 @@ var _ = Describe("check", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(session, 5).Should(gexec.Exit(0))
+		Eventually(session, 10).Should(gexec.Exit(0))
 
 		err = json.Unmarshal(session.Out.Contents(), &response)
 		Expect(err).NotTo(HaveOccurred())

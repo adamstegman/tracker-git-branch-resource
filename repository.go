@@ -29,8 +29,7 @@ func (r Repository) Clone() error {
 			return fmt.Errorf("Could not create temporary directory: %s", err)
 		}
 	}
-	cloneCmd := exec.Command("git", "clone", r.source, r.Dir)
-	err = cloneCmd.Run()
+	err = r.runCmd("git", "clone", r.source, r.Dir)
 	if err != nil {
 		return fmt.Errorf("Could not clone repository %s into directory %s: %s", r.source, r.Dir, err)
 	}
@@ -38,9 +37,7 @@ func (r Repository) Clone() error {
 }
 
 func (r Repository) Fetch() error {
-	fetchCmd := exec.Command("git", "fetch", "origin")
-	fetchCmd.Dir = r.Dir
-	err := fetchCmd.Run()
+	err := r.runCmd("git", "fetch", "origin")
 	if err != nil {
 		return fmt.Errorf("Could not fetch origin: %s", err)
 	}
@@ -48,9 +45,7 @@ func (r Repository) Fetch() error {
 }
 
 func (r Repository) CheckoutRef(ref string) error {
-	checkoutCmd := exec.Command("git", "checkout", ref)
-	checkoutCmd.Dir = r.Dir
-	err := checkoutCmd.Run()
+	err := r.runCmd("git", "checkout", ref)
 	if err != nil {
 		return fmt.Errorf("Could not checkout %s: %s", ref, err)
 	}
@@ -58,7 +53,7 @@ func (r Repository) CheckoutRef(ref string) error {
 }
 
 func (r Repository) RemoteBranches() ([]string, error) {
-	branchesOutput, err := r.cmdOutput("git", "branch", "-r")
+	branchesOutput, err := r.runCmdOutput("git", "branch", "-r")
 	if err != nil {
 		return []string{}, fmt.Errorf("Could not list remote branches: %s", err)
 	}
@@ -74,7 +69,7 @@ func (r Repository) RemoteBranches() ([]string, error) {
 }
 
 func (r Repository) RefAuthorName(ref string) (string, error) {
-	nameOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%an\"", ref)
+	nameOutput, err := r.runCmdOutput("git", "show", "-s", "--format=\"%an\"", ref)
 	if err != nil {
 		return "", fmt.Errorf("Could not show author name for %s: %s", ref, err)
 	}
@@ -82,7 +77,7 @@ func (r Repository) RefAuthorName(ref string) (string, error) {
 }
 
 func (r Repository) RefAuthorDate(ref string) (string, error) {
-	timeOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%ai\"", ref)
+	timeOutput, err := r.runCmdOutput("git", "show", "-s", "--format=\"%ai\"", ref)
 	if err != nil {
 		return "", fmt.Errorf("Could not show author date for %s: %s", ref, err)
 	}
@@ -90,7 +85,7 @@ func (r Repository) RefAuthorDate(ref string) (string, error) {
 }
 
 func (r Repository) RefCommitName(ref string) (string, error) {
-	nameOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%cn\"", ref)
+	nameOutput, err := r.runCmdOutput("git", "show", "-s", "--format=\"%cn\"", ref)
 	if err != nil {
 		return "", fmt.Errorf("Could not show committer name for %s: %s", ref, err)
 	}
@@ -98,7 +93,7 @@ func (r Repository) RefCommitName(ref string) (string, error) {
 }
 
 func (r Repository) RefCommitDate(ref string) (string, error) {
-	timeOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%ci\"", ref)
+	timeOutput, err := r.runCmdOutput("git", "show", "-s", "--format=\"%ci\"", ref)
 	if err != nil {
 		return "", fmt.Errorf("Could not show committer date for %s: %s", ref, err)
 	}
@@ -106,7 +101,7 @@ func (r Repository) RefCommitDate(ref string) (string, error) {
 }
 
 func (r Repository) RefCommitTimestamp(ref string) (int64, error) {
-	timeOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%ct\"", ref)
+	timeOutput, err := r.runCmdOutput("git", "show", "-s", "--format=\"%ct\"", ref)
 	if err != nil {
 		return 0, fmt.Errorf("Could not show committer timestamp for %s: %s", ref, err)
 	}
@@ -119,7 +114,7 @@ func (r Repository) RefCommitTimestamp(ref string) (int64, error) {
 }
 
 func (r Repository) RefMessage(ref string) (string, error) {
-	msgOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%B\"", ref)
+	msgOutput, err := r.runCmdOutput("git", "show", "-s", "--format=\"%B\"", ref)
 	if err != nil {
 		return "", fmt.Errorf("Could not show message for %s: %s", ref, err)
 	}
@@ -127,7 +122,7 @@ func (r Repository) RefMessage(ref string) (string, error) {
 }
 
 func (r Repository) LatestRef(branch string) (string, error) {
-	refOutput, err := r.cmdOutput("git", "show", "-s", "--format=\"%H\"", branch)
+	refOutput, err := r.runCmdOutput("git", "show", "-s", "--format=\"%H\"", branch)
 	if err != nil {
 		return "", fmt.Errorf("Could not show SHA for %s: %s", branch, err)
 	}
@@ -135,21 +130,35 @@ func (r Repository) LatestRef(branch string) (string, error) {
 }
 
 func (r Repository) RefsSinceTimestamp(branch string, timestamp int64) ([]string, error) {
-	refsOutput, err := r.cmdOutput("git", "log", fmt.Sprintf("--since=%d", timestamp), "--format=\"%H\"", branch)
+	refsOutput, err := r.runCmdOutput("git", "log", fmt.Sprintf("--since=%d", timestamp), "--format=\"%H\"", branch)
 	if err != nil {
 		return []string{}, fmt.Errorf("Could not list refs since %d for %s: %s", timestamp, branch, err)
 	}
 	return strings.Split(refsOutput, "\n"), nil
 }
 
-func (r Repository) cmdOutput(name string, args ...string) (string, error) {
+func (r Repository) runCmd(name string, args ...string) error {
+	cmd := exec.Command(name, args...)
+	cmd.Dir = r.Dir
+	var errBytes bytes.Buffer
+	cmd.Stderr = &errBytes
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("%s %v failed: %s\n[STDERR]\n%s", name, args, err, errBytes.String())
+	}
+	return nil
+}
+
+func (r Repository) runCmdOutput(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
 	cmd.Dir = r.Dir
 	var outputBytes bytes.Buffer
 	cmd.Stdout = &outputBytes
+	var errBytes bytes.Buffer
+	cmd.Stderr = &errBytes
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("Could not run command %s with args %v: %s", name, args, err)
+		return "", fmt.Errorf("%s %v failed: %s\n[STDERR]\n%s", name, args, err, errBytes.String())
 	}
 	return strings.TrimSpace(outputBytes.String()), nil
 }
