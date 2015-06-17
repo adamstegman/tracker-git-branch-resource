@@ -65,7 +65,7 @@ var _ = Describe("In", func() {
 				ProjectID: "123456",
 				Repo:      sourceRepo,
 			},
-			Version: resource.Version{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: 1433829600},
+			Version: resource.Version{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: "1433829600"},
 		}
 	})
 

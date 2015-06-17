@@ -11,7 +11,7 @@ type Source struct {
 type Version struct {
 	StoryID   string `json:"story_id"`
 	Ref       string `json:"ref"`
-	Timestamp int64  `json:"timestamp"`
+	Timestamp string `json:"timestamp"`
 }
 
 type MetadataPair struct {

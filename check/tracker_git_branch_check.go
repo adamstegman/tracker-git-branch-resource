@@ -75,7 +75,7 @@ func (c trackerGitBranchCheck) latestStoryBranchRef(remoteBranches []string) ([]
 					if err != nil {
 						return []resource.Version{}, fmt.Errorf("Could not get latest SHA for %s: %s", branch, err)
 					}
-					versions = []resource.Version{{StoryID: strconv.Itoa(story.ID), Ref: ref, Timestamp: timestamp}}
+					versions = []resource.Version{{StoryID: strconv.Itoa(story.ID), Ref: ref, Timestamp: strconv.FormatInt(timestamp, 10)}}
 					latestTime = timestamp
 				}
 
@@ -91,9 +91,13 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 	for _, story := range c.stories {
 		for _, branch := range remoteBranches {
 			if isStoryBranch(branch, story) {
-				refs, err := c.repository.RefsSinceTimestamp(branch, c.startingVersion.Timestamp)
+				timestamp, err := strconv.ParseInt(c.startingVersion.Timestamp, 10, 64)
 				if err != nil {
-					return []resource.Version{}, fmt.Errorf("Could not get refs since time %d for %s: %s", c.startingVersion.Timestamp, branch, err)
+					return []resource.Version{}, fmt.Errorf("Could not get parse time %s: %s", c.startingVersion.Timestamp, err)
+				}
+				refs, err := c.repository.RefsSinceTimestamp(branch, timestamp)
+				if err != nil {
+					return []resource.Version{}, fmt.Errorf("Could not get refs since time %s for %s: %s", timestamp, branch, err)
 				}
 
 				// Collect versions for later sorting
@@ -104,7 +108,7 @@ func (c trackerGitBranchCheck) storyBranchRefsSinceStartingVersion(remoteBranche
 						if err != nil {
 							return []resource.Version{}, fmt.Errorf("Could not get timestamp for %s: %s", ref, err)
 						}
-						versions = append(versions, resource.Version{StoryID: strconv.Itoa(story.ID), Ref: ref, Timestamp: timestamp})
+						versions = append(versions, resource.Version{StoryID: strconv.Itoa(story.ID), Ref: ref, Timestamp: strconv.FormatInt(timestamp, 10)})
 					}
 				}
 

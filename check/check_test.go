@@ -92,7 +92,7 @@ var _ = Describe("check", func() {
 
 			It("finds the latest ref out of the finished or delivered stories", func() {
 				Expect(response).To(Equal([]resource.Version{
-					{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: 1433829600},
+					{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: "1433829600"},
 				}))
 			})
 		})
@@ -147,7 +147,7 @@ var _ = Describe("check", func() {
 
 	Context("when a version is given", func() {
 		BeforeEach(func() {
-			request.Version = resource.Version{StoryID: "5454", Ref: "d6e5a26bc1e0b39b74f7aceb5ef651cb729cc5d0", Timestamp: 1433800800}
+			request.Version = resource.Version{StoryID: "5454", Ref: "d6e5a26bc1e0b39b74f7aceb5ef651cb729cc5d0", Timestamp: "1433800800"}
 		})
 
 		BeforeEach(func() {
@@ -171,16 +171,16 @@ var _ = Describe("check", func() {
 
 		It("returns all refs in all finished and delivered story branches after the given ref, in chronological order", func() {
 			Expect(response).To(Equal([]resource.Version{
-				{StoryID: "9999", Ref: "1ad88c443704b2531d471b99c21489f3c4deb974", Timestamp: 1433818800},
-				{StoryID: "1234", Ref: "98bc2acea806e1a507d70ae3ce21cee3cd2d6c38", Timestamp: 1433822400},
-				{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: 1433829600},
+				{StoryID: "9999", Ref: "1ad88c443704b2531d471b99c21489f3c4deb974", Timestamp: "1433818800"},
+				{StoryID: "1234", Ref: "98bc2acea806e1a507d70ae3ce21cee3cd2d6c38", Timestamp: "1433822400"},
+				{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: "1433829600"},
 			}))
 		})
 	})
 
 	Context("when a deleted version is given", func() {
 		BeforeEach(func() {
-			request.Version = resource.Version{StoryID: "1000", Ref: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0", Timestamp: 1433800801}
+			request.Version = resource.Version{StoryID: "1000", Ref: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0", Timestamp: "1433800801"}
 		})
 
 		BeforeEach(func() {
@@ -204,9 +204,9 @@ var _ = Describe("check", func() {
 
 		It("returns all refs in all finished and delivered story branches after the given ref, in chronological order", func() {
 			Expect(response).To(Equal([]resource.Version{
-				{StoryID: "9999", Ref: "1ad88c443704b2531d471b99c21489f3c4deb974", Timestamp: 1433818800},
-				{StoryID: "1234", Ref: "98bc2acea806e1a507d70ae3ce21cee3cd2d6c38", Timestamp: 1433822400},
-				{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: 1433829600},
+				{StoryID: "9999", Ref: "1ad88c443704b2531d471b99c21489f3c4deb974", Timestamp: "1433818800"},
+				{StoryID: "1234", Ref: "98bc2acea806e1a507d70ae3ce21cee3cd2d6c38", Timestamp: "1433822400"},
+				{StoryID: "9999", Ref: "42f809095d489e446713cf20fdc3d30e5faaa4c9", Timestamp: "1433829600"},
 			}))
 		})
 	})
