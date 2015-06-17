@@ -3,35 +3,27 @@ package resource
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os/exec"
 	"strconv"
 	"strings"
 )
 
 type Repository struct {
-	Dir    string
+	dir    string
 	source string
 }
 
 func NewRepository(source string, dir string) Repository {
 	return Repository{
-		Dir:    dir,
+		dir:    dir,
 		source: source,
 	}
 }
 
 func (r Repository) Clone() error {
-	var err error
-	if r.Dir == "" {
-		r.Dir, err = ioutil.TempDir("", "tracker-git-branch-resource-repository")
-		if err != nil {
-			return fmt.Errorf("Could not create temporary directory: %s", err)
-		}
-	}
-	err = r.runCmd("git", "clone", r.source, r.Dir)
+	err := r.runCmd("git", "clone", r.source, r.dir)
 	if err != nil {
-		return fmt.Errorf("Could not clone repository %s into directory %s: %s", r.source, r.Dir, err)
+		return fmt.Errorf("Could not clone repository %s into directory %s: %s", r.source, r.dir, err)
 	}
 	return nil
 }
@@ -139,26 +131,26 @@ func (r Repository) RefsSinceTimestamp(branch string, timestamp int64) ([]string
 
 func (r Repository) runCmd(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
-	cmd.Dir = r.Dir
+	cmd.Dir = r.dir
 	var errBytes bytes.Buffer
 	cmd.Stderr = &errBytes
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("%s %v in %s failed: %s\n[STDERR]\n%s", name, args, r.Dir, err, errBytes.String())
+		return fmt.Errorf("%s %v in %s failed: %s\n[STDERR]\n%s", name, args, r.dir, err, errBytes.String())
 	}
 	return nil
 }
 
 func (r Repository) runCmdOutput(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
-	cmd.Dir = r.Dir
+	cmd.Dir = r.dir
 	var outputBytes bytes.Buffer
 	cmd.Stdout = &outputBytes
 	var errBytes bytes.Buffer
 	cmd.Stderr = &errBytes
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("%s %v in %s failed: %s\n[STDERR]\n%s", name, args, r.Dir, err, errBytes.String())
+		return "", fmt.Errorf("%s %v in %s failed: %s\n[STDERR]\n%s", name, args, r.dir, err, errBytes.String())
 	}
 	return strings.TrimSpace(outputBytes.String()), nil
 }
