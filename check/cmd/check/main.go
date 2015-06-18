@@ -24,8 +24,18 @@ func main() {
 	targetDir, err := ioutil.TempDir("", "tracker-git-branch-resource-check")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not create temporary directory: %s\n", err)
+		os.Exit(1)
 	}
-	repository := resource.NewRepository(request.Source.Repo, targetDir, request.Source.PrivateKey)
+	var keyFile string
+	if request.Source.PrivateKey != "" {
+		keyFile, err = resource.CreateKeyFile(request.Source.PrivateKey)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not create keyfile: %s", err)
+			os.Exit(1)
+		}
+		defer os.Remove(keyFile)
+	}
+	repository := resource.NewRepository(request.Source.Repo, targetDir, keyFile)
 	err = repository.Clone()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not clone repo %s: %s\n", request.Source.Repo, err)

@@ -19,13 +19,23 @@ func main() {
 	targetDir := os.Args[1]
 
 	var request in.InRequest
-	if err := json.NewDecoder(os.Stdin).Decode(&request); err != nil {
+	err := json.NewDecoder(os.Stdin).Decode(&request)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not parse input: %s\n", err)
 		os.Exit(1)
 	}
 
-	repository := resource.NewRepository(request.Source.Repo, targetDir, request.Source.PrivateKey)
-	err := repository.Clone()
+	var keyFile string
+	if request.Source.PrivateKey != "" {
+		keyFile, err = resource.CreateKeyFile(request.Source.PrivateKey)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not create keyfile: %s", err)
+			os.Exit(1)
+		}
+		defer os.Remove(keyFile)
+	}
+	repository := resource.NewRepository(request.Source.Repo, targetDir, keyFile)
+	err = repository.Clone()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not clone repo %s: %s\n", request.Source.Repo, err)
 		os.Exit(1)
