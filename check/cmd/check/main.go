@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not create temporary directory: %s\n", err)
 	}
-	repository := resource.NewRepository(request.Source.Repo, targetDir)
+	repository := resource.NewRepository(request.Source.Repo, targetDir, request.Source.PrivateKey)
 	err = repository.Clone()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not clone repo %s: %s\n", request.Source.Repo, err)

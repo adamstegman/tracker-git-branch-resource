@@ -3,25 +3,37 @@ package resource
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 )
 
 type Repository struct {
-	dir    string
-	source string
+	dir        string
+	privateKey string
+	source     string
 }
 
-func NewRepository(source string, dir string) Repository {
+func NewRepository(source string, dir string, privateKey string) Repository {
 	return Repository{
-		dir:    dir,
-		source: source,
+		dir:        dir,
+		privateKey: privateKey,
+		source:     source,
 	}
 }
 
 func (r Repository) Clone() error {
 	cmd := exec.Command("git", "clone", r.source, r.dir)
+	if r.privateKey != "" {
+		keyFile, err := r.createKeyFile()
+		if err != nil {
+			return fmt.Errorf("Could not create keyfile: %s", err)
+		}
+		defer os.Remove(keyFile)
+		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"ssh -i %s\"", keyFile))
+	}
 	var errBytes bytes.Buffer
 	cmd.Stderr = &errBytes
 	err := cmd.Run()
@@ -134,6 +146,14 @@ func (r Repository) RefsSinceTimestamp(branch string, timestamp int64) ([]string
 
 func (r Repository) runRepoCmd(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
+	if r.privateKey != "" {
+		keyFile, err := r.createKeyFile()
+		if err != nil {
+			return fmt.Errorf("Could not create keyfile: %s", err)
+		}
+		defer os.Remove(keyFile)
+		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"ssh -i %s\"", keyFile))
+	}
 	cmd.Dir = r.dir
 	var errBytes bytes.Buffer
 	cmd.Stderr = &errBytes
@@ -146,6 +166,14 @@ func (r Repository) runRepoCmd(name string, args ...string) error {
 
 func (r Repository) runRepoCmdOutput(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
+	if r.privateKey != "" {
+		keyFile, err := r.createKeyFile()
+		if err != nil {
+			return "", fmt.Errorf("Could not create keyfile: %s", err)
+		}
+		defer os.Remove(keyFile)
+		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"ssh -i %s\"", keyFile))
+	}
 	cmd.Dir = r.dir
 	var outputBytes bytes.Buffer
 	cmd.Stdout = &outputBytes
@@ -156,4 +184,17 @@ func (r Repository) runRepoCmdOutput(name string, args ...string) (string, error
 		return "", fmt.Errorf("%s %v in %s failed: %s\n[STDERR]\n%s", name, args, r.dir, err, errBytes.String())
 	}
 	return strings.TrimSpace(outputBytes.String()), nil
+}
+
+func (r Repository) createKeyFile() (string, error) {
+	keyFile, err := ioutil.TempFile("", "tracker-git-branch-resource")
+	if err != nil {
+		return "", fmt.Errorf("Could not create keyfile: %s", err)
+	}
+	keyFile.Chmod(0600)
+	_, err = keyFile.WriteString(r.privateKey)
+	if err != nil {
+		return "", fmt.Errorf("Could not write keyfile %s: %s", keyFile, err)
+	}
+	return keyFile.Name(), nil
 }

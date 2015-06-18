@@ -72,7 +72,7 @@ var _ = Describe("In", func() {
 	})
 
 	It("clones the ref in the given directory and outputs that version", func() {
-		repository := resource.NewRepository("", tmpDir)
+		repository := resource.NewRepository("", tmpDir, "")
 		ref, err := repository.LatestRef("HEAD")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(ref).To(Equal(request.Version.Ref))
