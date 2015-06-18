@@ -27,7 +27,7 @@ func NewRepository(source string, dir string, keyFile string) Repository {
 func (r Repository) Clone() error {
 	cmd := exec.Command("git", "clone", r.source, r.dir)
 	if r.keyFile != "" {
-		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"ssh -i %s\"", r.keyFile))
+		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"/usr/bin/ssh -i %s\"", r.keyFile))
 	}
 	var errBytes bytes.Buffer
 	cmd.Stderr = &errBytes
@@ -142,7 +142,7 @@ func (r Repository) RefsSinceTimestamp(branch string, timestamp int64) ([]string
 func (r Repository) runRepoCmd(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	if r.keyFile != "" {
-		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"ssh -i %s\"", r.keyFile))
+		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"/usr/bin/ssh -i %s\"", r.keyFile))
 	}
 	cmd.Dir = r.dir
 	var errBytes bytes.Buffer
@@ -157,7 +157,7 @@ func (r Repository) runRepoCmd(name string, args ...string) error {
 func (r Repository) runRepoCmdOutput(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
 	if r.keyFile != "" {
-		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"ssh -i %s\"", r.keyFile))
+		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=\"/usr/bin/ssh -i %s\"", r.keyFile))
 	}
 	cmd.Dir = r.dir
 	var outputBytes bytes.Buffer
