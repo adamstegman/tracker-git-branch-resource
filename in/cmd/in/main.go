@@ -12,23 +12,11 @@ import (
 )
 
 func main() {
-	var err error
 	if len(os.Args) < 2 {
 		fmt.Fprintf(os.Stderr, "usage: %s <target directory>\n", os.Args[0])
 		os.Exit(1)
 	}
 	targetDir := os.Args[1]
-	_, err = os.Stat(targetDir)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(targetDir, os.ModeDir|os.ModePerm)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Could not create target directory %s: %s\n", targetDir, err)
-			os.Exit(1)
-		}
-	} else if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not find target directory %s: %s\n", targetDir, err)
-		os.Exit(1)
-	}
 
 	var request in.InRequest
 	if err := json.NewDecoder(os.Stdin).Decode(&request); err != nil {
@@ -37,7 +25,7 @@ func main() {
 	}
 
 	repository := resource.NewRepository(request.Source.Repo, targetDir)
-	err = repository.Clone()
+	err := repository.Clone()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not clone repo %s: %s\n", request.Source.Repo, err)
 		os.Exit(1)

@@ -23,15 +23,12 @@ var _ = Describe("In", func() {
 		request  in.InRequest
 		response in.InResponse
 	)
-	BeforeEach(func() {
-		var err error
-		tmpDir, err = ioutil.TempDir("", "tracker_resource_in")
-		Expect(err).NotTo(HaveOccurred())
-	})
 
 	JustBeforeEach(func() {
 		binPath, err := gexec.Build("github.com/adamstegman/tracker-git-branch-resource/in/cmd/in")
 		Expect(err).NotTo(HaveOccurred())
+
+		tmpDir, err = ioutil.TempDir("", "tracker_resource_in")
 
 		stdin := &bytes.Buffer{}
 		err = json.NewEncoder(stdin).Encode(request)
@@ -90,18 +87,5 @@ var _ = Describe("In", func() {
 			{Name: "message", Value: "Update\n"},
 			{Name: "story_url", Value: "https://www.pivotaltracker.com/story/show/9999"},
 		}))
-	})
-
-	Context("when the target directory does not exist", func() {
-		BeforeEach(func() {
-			err := os.RemoveAll(tmpDir)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("creates the target directory", func() {
-			tdInfo, err := os.Stat(tmpDir)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(tdInfo.IsDir()).To(BeTrue())
-		})
 	})
 })
