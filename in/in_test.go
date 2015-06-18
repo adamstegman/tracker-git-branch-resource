@@ -29,6 +29,9 @@ var _ = Describe("In", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		tmpDir, err = ioutil.TempDir("", "tracker_resource_in")
+		Expect(err).NotTo(HaveOccurred())
+		err = os.RemoveAll(tmpDir)
+		Expect(err).NotTo(HaveOccurred())
 
 		stdin := &bytes.Buffer{}
 		err = json.NewEncoder(stdin).Encode(request)
