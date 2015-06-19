@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	"github.com/adamstegman/tracker-git-branch-resource"
 	"github.com/adamstegman/tracker-git-branch-resource/out"
 )
 
@@ -40,13 +39,7 @@ var _ = Describe("Out", func() {
 		var response out.OutResponse
 
 		BeforeEach(func() {
-			request = out.OutRequest{
-				Source: resource.Source{
-					Token:     "abc",
-					ProjectID: "1234",
-				},
-				Params: struct{}{},
-			}
+			request = out.OutRequest{}
 			response = out.OutResponse{}
 		})
 

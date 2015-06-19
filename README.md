@@ -18,7 +18,8 @@ The git branches are identified by the presence of a story ID in the branch name
   type: tracker-git-branch
   source:
     token: TRACKER_API_TOKEN
-    project_id: "TRACKER_PROJECT_ID"
+    projects:
+      - "TRACKER_PROJECT_ID"
     tracker_url: https://www.pivotaltracker.com
     repo: git@github.com:you/your_repo
     private_key: GITHUB_PRIVATE_KEY
@@ -27,8 +28,8 @@ The git branches are identified by the presence of a story ID in the branch name
 #### Source Configuration
 
 * `token`: *Required.* Your API token, which can be found on your profile page.
-* `project_id`: *Required.* Your project ID, which can be found in the URL of your project.
-  Make sure that your `project_id` is a string because it will converted to JSON when given to the resource and JSON doesn't like integers.
+* `projects`: *Required.* Your Tracker project IDs, which can be found in the URL of your project.
+  Make sure that each value is a string because it will converted to JSON when given to the resource and JSON doesn't like integers.
 * `tracker_url`: *Optional.*
 * `repo`: *Required.* The location of the repository which will contain the branches corresponding to Tracker stories.
 * `private_key`: *Optional.* Private key to use when pulling/pushing.

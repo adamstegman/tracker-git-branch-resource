@@ -1,11 +1,11 @@
 package resource
 
 type Source struct {
-	Token      string `json:"token"`
-	ProjectID  string `json:"project_id"`
-	TrackerURL string `json:"tracker_url"`
-	Repo       string `json:"repo"`
-	PrivateKey string `json:"private_key"`
+	Token      string   `json:"token"`
+	Projects   []string `json:"projects"`
+	TrackerURL string   `json:"tracker_url"`
+	Repo       string   `json:"repo"`
+	PrivateKey string   `json:"private_key"`
 }
 
 type Version struct {

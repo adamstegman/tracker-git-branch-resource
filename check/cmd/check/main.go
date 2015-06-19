@@ -46,26 +46,30 @@ func main() {
 		tracker.DefaultURL = request.Source.TrackerURL
 	}
 	trackerToken := request.Source.Token
-	trackerProjectID, err := strconv.Atoi(request.Source.ProjectID)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Invalid Tracker project ID %s: %s\n", request.Source.ProjectID, err)
-		os.Exit(1)
-	}
-	projectClient := tracker.NewClient(trackerToken).InProject(trackerProjectID)
+	stories := []tracker.Story{}
+	for _, projectID := range request.Source.Projects {
+		trackerProjectID, err := strconv.Atoi(projectID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid Tracker project ID %s: %s\n", projectID, err)
+			os.Exit(1)
+		}
+		projectClient := tracker.NewClient(trackerToken).InProject(trackerProjectID)
 
-	finishedQuery := tracker.StoriesQuery{State: tracker.StoryStateFinished}
-	finishedStories, err := projectClient.Stories(finishedQuery)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not fetch finished stories: %s\n", err)
-		os.Exit(1)
+		finishedQuery := tracker.StoriesQuery{State: tracker.StoryStateFinished}
+		finishedStories, err := projectClient.Stories(finishedQuery)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not fetch finished stories: %s\n", err)
+			os.Exit(1)
+		}
+		stories = append(stories, finishedStories...)
+		deliveredQuery := tracker.StoriesQuery{State: tracker.StoryStateDelivered}
+		deliveredStories, err := projectClient.Stories(deliveredQuery)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not fetch delivered stories: %s\n", err)
+			os.Exit(1)
+		}
+		stories = append(stories, deliveredStories...)
 	}
-	deliveredQuery := tracker.StoriesQuery{State: tracker.StoryStateDelivered}
-	deliveredStories, err := projectClient.Stories(deliveredQuery)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not fetch delivered stories: %s\n", err)
-		os.Exit(1)
-	}
-	stories := append(finishedStories, deliveredStories...)
 
 	trackerGitBranchCheck := check.NewTrackerGitBranchCheck(request.Version, repository, stories)
 	versions, err := trackerGitBranchCheck.NewVersions()
