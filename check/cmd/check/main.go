@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/xoebus/go-tracker"
@@ -21,11 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	targetDir, err := ioutil.TempDir("", "tracker-git-branch-resource-check")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not create temporary directory: %s\n", err)
-		os.Exit(1)
-	}
+	targetDir := filepath.Join(os.Getenv("TMPDIR"), "tracker-git-branch-resource-repo-cache")
 	var keyFile string
 	if request.Source.PrivateKey != "" {
 		keyFile, err = resource.CreateKeyFile(request.Source.PrivateKey)
