@@ -25,10 +25,12 @@ func NewRepository(source string, dir string, keyFile string) Repository {
 }
 
 func (r Repository) Clone() error {
-	err := os.RemoveAll(r.dir)
-	if err != nil {
-		return fmt.Errorf("Could not clean repository target dir %s: %s", r.dir, err)
+	_, err := os.Stat(r.dir)
+	if !os.IsNotExist(err) {
+		// repository is already cloned
+		return nil
 	}
+
 	cmd := exec.Command("git", "clone", r.source, r.dir)
 	if r.keyFile != "" {
 		cmd.Env = append(os.Environ(), fmt.Sprintf("GIT_SSH_COMMAND=/usr/bin/ssh -i %s", r.keyFile))
