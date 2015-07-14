@@ -26,9 +26,12 @@ func NewRepository(source string, dir string, keyFile string) Repository {
 
 func (r Repository) Clone() error {
 	_, err := os.Stat(r.dir)
-	if !os.IsNotExist(err) {
+	if err == nil {
 		// repository is already cloned
 		return nil
+	}
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("Could not stat repository dir %s: %s", r.dir, err)
 	}
 
 	cmd := exec.Command("git", "clone", r.source, r.dir)
